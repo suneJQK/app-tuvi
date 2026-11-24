@@ -159,8 +159,10 @@ test("sao trên bàn: chính tinh riêng, sao tốt bên trái, hung tinh bên p
   if (kinh) assert.equal(kinh.kind, "hung");
   const tauThu = all.find((s) => s.ten === "Tấu thư");
   if (tauThu) assert.equal(tauThu.kind, "tot");
-  const html = R.renderBoard(r, "Mệnh");
-  assert.ok(html.includes("col-tot") && html.includes("col-hung"));
+  // Bàn số gọn; sao đầy đủ nằm trong bảng cung (ô giữa khi chạm): chính tinh, sao tốt, hung tinh.
+  const cung = R.renderPalaceCenter(r, "Mệnh");
+  assert.ok(cung.includes("Chính tinh:") && cung.includes("Sao tốt:") && cung.includes("Hung tinh:"));
+  assert.ok(R.renderBoard(r, "Mệnh").includes("center-palace"));
   const strip = R.renderHanStrip(r);
   assert.ok(strip.includes("ĐV") && strip.includes("LNg") && strip.includes("LT"));
 });

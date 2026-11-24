@@ -14,7 +14,7 @@ const state = {
   birth: null,   // thông tin sinh
   view: null,    // ngày/giờ xem
   result: null,  // kết quả engine
-  selected: "Mệnh",
+  selected: null,          // null = hiển thị thông tin lá số; có tên cung = hiển thị thông tin cung đó
 };
 
 // ------------------------------------------------------------ tiện ích
@@ -110,7 +110,7 @@ function renderAll() {
   $("#birth-bar").classList.remove("hidden");
   $("#form-birth").classList.add("hidden");
   $("#board").innerHTML = renderBoard(r, state.selected);
-  $("#palace-detail").innerHTML = renderPalaceDetail(r, state.selected);
+  drawRelations(state.selected);
 
   $("#v-date").value = isoDate(state.view.nam_xem, state.view.thang_xem, state.view.ngay_xem);
   $("#v-gio").value = state.view.gio_xem || "";
@@ -122,12 +122,38 @@ function renderAll() {
 }
 
 function selectPalace(name) {
-  state.selected = name;
-  document.querySelectorAll("#board .cell").forEach((el) => {
-    el.classList.toggle("selected", el.dataset.cung === name);
-  });
-  $("#palace-detail").innerHTML = renderPalaceDetail(state.result, name);
-  $("#palace-wrap").open = true;
+  state.selected = state.selected === name ? null : name;   // chạm lại cùng cung để đóng
+  $("#board").innerHTML = renderBoard(state.result, state.selected);
+  drawRelations(state.selected);
+}
+
+/** Vẽ đường tam hợp (vàng, liền) và xung chiếu (đỏ, đứt) từ cung đang chọn. */
+function drawRelations(name) {
+  const svg = $("#board-lines");
+  const wrap = $("#board-wrap");
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", W);
+  svg.setAttribute("height", H);
+  svg.innerHTML = "";
+  if (!name || !state.result) return;
+  const rel = state.result.relations[name] || {};
+  const wb = wrap.getBoundingClientRect();
+  const point = (n) => {
+    const el = document.querySelector(`#board .cell[data-cung="${CSS.escape(n)}"]`);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.left - wb.left + r.width / 2, y: r.top - wb.top + r.height / 2 };
+  };
+  const from = point(name);
+  if (!from) return;
+  const seg = (a, b, cls) => `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="${cls}"/>`;
+  let out = "";
+  const th = (rel.tam_hop || []).map((x) => point(x.cung)).filter(Boolean);
+  th.forEach((t) => { out += seg(from, t, "ln-tamhop"); });
+  if (th.length === 2) out += seg(th[0], th[1], "ln-tamhop");
+  (rel.xung_chieu || []).map((x) => point(x.cung)).filter(Boolean).forEach((t) => { out += seg(from, t, "ln-xung"); });
+  svg.innerHTML = out;
 }
 
 // ------------------------------------------------------------ hồ sơ
@@ -176,7 +202,7 @@ function bindEvents() {
     try {
       const birth = readBirthForm();
       const t = todayParts();
-      state.selected = "Mệnh";
+      state.selected = null;
       compute(birth, { nam_xem: t.y, thang_xem: t.m, ngay_xem: t.d, gio_xem: null });
       toast("Đã lập lá số");
     } catch (err) {
@@ -213,7 +239,9 @@ function bindEvents() {
     compute(state.birth, { nam_xem: t.y, thang_xem: t.m, ngay_xem: t.d, gio_xem: state.view?.gio_xem || null });
   });
 
+  window.addEventListener("resize", () => drawRelations(state.selected));
   $("#board").addEventListener("click", (ev) => {
+    if (ev.target.closest("[data-close]")) { selectPalace(state.selected); return; }
     const cell = ev.target.closest(".cell");
     if (cell) selectPalace(cell.dataset.cung);
   });
@@ -241,7 +269,7 @@ function bindEvents() {
       document.querySelector('.fn[data-view="view-la-so"]').click();
       try {
         const t = todayParts();
-        state.selected = "Mệnh";
+        state.selected = null;
         compute(p.birth, { nam_xem: t.y, thang_xem: t.m, ngay_xem: t.d, gio_xem: null });
       } catch (err) { toast(err.message, true); }
     }
