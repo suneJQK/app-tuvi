@@ -83,6 +83,25 @@ export function renderHanStrip(result) {
     </div>`;
 }
 
+/** Dải liệt kê rõ ràng: 12 tháng âm (Lưu nguyệt) và các ngày âm của tháng xem (Lưu nhật). */
+export function renderLuuDai(result) {
+  const h = result.han || {};
+  if (!h.luu_nguyet) return "";
+  const ln = h.luu_nguyet;
+  const months = ln.bang.map((r) => `
+      <div class="luu-chip ${r.thang_am === ln.thang_am ? "cur" : ""}">
+        <b>Tháng ${r.thang_am}</b><span>${esc(r.cung_ten)} · ${esc(r.dia_chi)}</span>
+      </div>`).join("");
+  const days = (h.luu_nhat?.bang || []).map((r) => `
+      <span class="day-chip ${r.ngay_am === h.luu_nhat.ngay_am ? "cur" : ""}" title="${esc(r.duong)} · ${esc(r.cung_ten)}">${r.ngay_am}</span>`).join("");
+  return `<div class="luu-dai">
+      <div class="han-head">Lưu nguyệt · 12 tháng âm ${esc(ln.nam_am)} (tô sáng: tháng đang xem)</div>
+      <div class="luu-grid">${months}</div>
+      <div class="han-head" style="margin-top:8px">Lưu nhật · ngày âm ${esc(h.luu_nhat?.ngay_am)} của tháng ${esc(ln.thang_am)} (tô sáng: ngày đang xem)</div>
+      <div class="day-grid">${days}</div>
+    </div>`;
+}
+
 const TAG_TITLE = {
   ĐV: "Đại vận", LNĐV: "Lưu niên Đại vận", TV: "Tiểu vận", LN: "Lưu niên năm",
   LNg: "Lưu nguyệt", LNh: "Lưu nhật", LT: "Lưu thời",

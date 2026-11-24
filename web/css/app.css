@@ -157,3 +157,15 @@ tr.current td:first-child { border-left: 3px solid var(--gold); }
   .han-cards { grid-template-columns: 1fr; }
   .detail-grid { grid-template-columns: 1fr; }
 }
+
+/* Lưu nguyệt 12 tháng + Lưu nhật ngày (dải rõ ràng) */
+.luu-dai { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; margin: 10px 0; }
+.luu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.luu-chip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 7px; font-size: 12px; display: flex; flex-direction: column; }
+.luu-chip b { color: var(--gold); font-size: 13px; }
+.luu-chip span { color: var(--muted); }
+.luu-chip.cur { border-color: var(--gold); background: #3a3327; }
+.day-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.day-chip { min-width: 26px; text-align: center; font-size: 12px; padding: 3px 4px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); }
+.day-chip.cur { background: var(--gold); color: #1b1a17; font-weight: 700; }
+@media (max-width: 480px) { .luu-grid { grid-template-columns: repeat(3, 1fr); } }
