@@ -51,20 +51,44 @@ test("lập lá số: đủ 12 cung, bàn số 4x4 không trùng ô", () => {
   assert.equal(r.summary.so_sao > 50, true);
 });
 
-test("Lưu nguyệt / Lưu nhật / Lưu thời khớp engine gốc", () => {
-  const r = engine.tinhLaSo({ ...BIRTH, ...VIEW });
-  // Kết quả đối chiếu trực tiếp với calculate_van_layers của repo luangiaibysun.
-  assert.equal(r.han.luu_nguyet.chi_ten, "Hợi");
+const BIRTH_1996 = { ten: "", ngay: 11, thang: 11, nam: 1996, gio_sinh: "Tý", gioi_tinh: "Nam", duong_lich: true, time_zone: 7 };
+
+test("Đấu quân & Lưu nguyệt đúng ví dụ: nam 11/11/1996 giờ Tý, tháng 1 âm 2026 ở Dậu (Phu thê)", () => {
+  // 17/02/2026 dương = mồng 1 tháng Giêng âm năm 2026
+  const r = engine.tinhLaSo({ ...BIRTH_1996, nam_xem: 2026, thang_xem: 2, ngay_xem: 17, gio_xem: 5 });
+  assert.equal(r.han.dau_quan.dau_quan_sinh_dia_chi, "Mão");   // 1/10 âm 1996, giờ Tý
+  assert.equal(r.han.dau_quan.dia_chi, "Dậu");
+  assert.equal(r.han.dau_quan.cung_ten, "Phu thê");
+  assert.equal(r.han.luu_nguyet.thang_am, 1);
   assert.equal(r.han.luu_nguyet.cung_ten, "Phu thê");
-  assert.equal(r.han.luu_nhat.chi_ten, "Dần");
-  assert.equal(r.han.luu_nhat.cung_ten, "Phụ mẫu");
-  assert.equal(r.han.luu_thoi.chi_ten, "Thìn");
-  assert.equal(r.han.luu_thoi.cung_ten, "Điền trạch");
+  assert.equal(r.han.luu_nguyet.bang[1].cung_ten, "Huynh đệ"); // tháng 2 thuận sang Tuất
+  assert.equal(r.han.luu_nguyet.bang[1].dia_chi, "Tuất");
 });
 
-test("không xem giờ thì không có Lưu thời; không xem ngày thì không có Lưu nhật", () => {
-  const r = engine.tinhLaSo({ ...BIRTH, nam_xem: 2026, thang_xem: 11, ngay_xem: 24, gio_xem: null });
-  assert.ok(!r.han.luu_thoi);
+test("Lưu nhật: mồng 1 tại cung Lưu nguyệt, mỗi ngày một cung thuận, ngày 13 quay lại cung cũ", () => {
+  const r = engine.tinhLaSo({ ...BIRTH_1996, nam_xem: 2026, thang_xem: 2, ngay_xem: 17, gio_xem: 5 });
+  const bang = r.han.luu_nhat.bang;
+  assert.equal(bang[0].cung_ten, "Phu thê");
+  assert.equal(bang[1].dia_chi, "Tuất");
+  assert.equal(bang[12].cung_ten, "Phu thê");
+  assert.equal(r.han.luu_nhat.ngay_am, 1);
+});
+
+test("Lưu thời: tại cung Lưu nhật, Tý = cung Lưu nhật, mỗi canh giờ một cung", () => {
+  const r = engine.tinhLaSo({ ...BIRTH_1996, nam_xem: 2026, thang_xem: 2, ngay_xem: 17, gio_xem: 5 });
+  const bang = r.han.luu_thoi.bang;
+  assert.equal(bang[0].gio, "Tý");
+  assert.equal(bang[0].cung_ten, "Phu thê");
+  assert.equal(bang[1].gio, "Sửu");
+  assert.equal(bang[1].dia_chi, "Tuất");          // Phu thê (Dậu) thuận một cung
+  assert.equal(bang[1].cung_ten, "Huynh đệ");
+  assert.equal(r.han.luu_thoi.cung_ten, "Phúc đức"); // giờ Thìn (idx 4) từ Dậu -> Sửu = Phúc đức
+});
+
+test("không xem giờ thì không chọn cung Lưu thời; không xem ngày thì không có Lưu nguyệt/nhật", () => {
+  const r = engine.tinhLaSo({ ...BIRTH_1996, nam_xem: 2026, thang_xem: 2, ngay_xem: 17, gio_xem: null });
+  assert.equal(r.han.luu_thoi.cung_ten, null);
+  assert.equal(r.han.luu_thoi.bang.length, 12);
   assert.ok(r.han.luu_nhat);
   const r2 = engine.tinhLaSo({ ...BIRTH, nam_xem: 2026, thang_xem: null, ngay_xem: null, gio_xem: null });
   assert.ok(!r2.han.luu_nhat);

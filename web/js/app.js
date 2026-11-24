@@ -2,7 +2,7 @@
 import { createEngine } from "./engine.js";
 import {
   CHI, GIO_LABEL, esc, renderBoard, renderCach, renderHanCards, renderPalaceDetail,
-  renderProfiles, renderSao, renderSummary, renderVanTable,
+  renderLuuBang, renderProfiles, renderSao, renderSummary, renderVanTable,
 } from "./render.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -113,6 +113,7 @@ function renderAll() {
   $("#v-gio").value = state.view.gio_xem || "";
   $("#han-cards").innerHTML = renderHanCards(r);
   $("#van-table").innerHTML = renderVanTable(r);
+  $("#luu-bang").innerHTML = renderLuuBang(r);
 
   $("#sao-list").innerHTML = renderSao(r, $("#sao-search").value);
 }

@@ -136,24 +136,44 @@ export function renderHanCards(result) {
   const row = (v.rows || []).find((r) => r.nam === year) || {};
   const dv = v.dai_van_hien_tai;
   const card = (label, main, sub = "") => `<div class="han-item"><span>${esc(label)}</span><b>${esc(main || "—")}</b>${sub ? `<div class="sub">${esc(sub)}</div>` : ""}</div>`;
-  const lg = h.luu_nguyet;
+  const dq = h.dau_quan;
+  const ln = h.luu_nguyet;
   const lh = h.luu_nhat;
   const lt = h.luu_thoi;
   const view = result.chart.viewing || {};
+  const hasLunar = !!ln;
   return `
     <h2>Hạn tại thời điểm xem</h2>
-    <div class="small muted" style="margin-bottom:8px">Năm ${esc(year)} · tuổi ${esc(v.tuoi ?? "—")} · ngày ${esc(view.day ?? "—")}/${esc(view.month ?? "—")}/${esc(year)}${view.hour ? ` · giờ ${esc(CHI[view.hour - 1])}` : ""}</div>
+    <div class="small muted" style="margin-bottom:8px">Dương lịch ${esc(view.day ?? "—")}/${esc(view.month ?? "—")}/${esc(year)} · tuổi ${esc(v.tuoi ?? "—")}${hasLunar ? ` · âm lịch ${esc(lh.ngay_am)}/${esc(ln.thang_am)}/${esc(ln.nam_am)}` : ""}</div>
     <div class="han-cards">
       ${card("Đại vận", dv ? (dv.cung || palaceNameBySo(result, dv.cung_so)) : "—", dv ? `${dv.tuoi_bat_dau}–${dv.tuoi_ket_thuc} tuổi · ${v.huong_vong_van || ""}` : "")}
       ${card("Lưu niên Đại vận", row.luu_nien_dai_van?.cung, "Theo Đại vận hiện tại")}
       ${card("Tiểu vận", row.tieu_van?.cung, "Theo Chi năm xem")}
       ${card("Lưu niên năm", row.luu_nien_nam?.cung, row.luu_nien_nam?.can_chi ? `Năm ${row.luu_nien_nam.can_chi}` : "")}
-      ${card("Lưu nguyệt (tháng)", lg ? `${lg.can_ten} ${lg.chi_ten} · ${lg.cung_ten || "—"}` : "Chọn ngày xem", lg ? `Tháng ${lg.thang_duong} dương lịch · theo tiết khí` : "")}
-      ${card("Lưu nhật (ngày)", lh ? `${lh.can_ten} ${lh.chi_ten} · ${lh.cung_ten || "—"}` : "Chọn ngày xem", lh ? `Ngày ${lh.ngay} · Can Chi ngày` : "")}
-      ${card("Lưu thời (giờ)", lt ? `${lt.can_ten} ${lt.chi_ten} · ${lt.cung_ten || "—"}` : "Chọn giờ xem", "")}
-      ${card("Lưu niên (Chi năm xem)", h.luu_nien?.cung_nam_ten, h.luu_nien?.chi_nam_ten ? `Chi ${h.luu_nien.chi_nam_ten}` : "")}
-    </div>
-    ${lg?.warning ? `<p class="hint">${esc(lg.warning)}</p>` : ""}`;
+      ${card("Đấu quân", dq?.cung_ten, dq ? `Tháng Giêng âm ${dq.nam_am} · ${dq.dia_chi}` : "")}
+      ${card("Lưu nguyệt", ln?.cung_ten, ln ? `Tháng âm ${ln.thang_am} · ${ln.dia_chi}` : "")}
+      ${card("Lưu nhật", lh?.cung_ten, lh ? `Ngày âm ${lh.ngay_am} · ${lh.dia_chi}` : "")}
+      ${card("Lưu thời", lt?.cung_ten, lt?.gio ? `Giờ ${lt.gio}` : "Chọn giờ xem để xác định")}
+    </div>`;
+}
+
+export function renderLuuBang(result) {
+  const h = result.han || {};
+  if (!h.luu_nguyet) return `<div class="card empty">Chọn ngày xem để xem bảng Lưu nguyệt, Lưu nhật, Lưu thời.</div>`;
+  const ln = h.luu_nguyet, lh = h.luu_nhat, lt = h.luu_thoi;
+  const tbl = (head, rows) => `<table><thead><tr>${head.map((x) => `<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+  const thang = tbl(["Tháng âm", "Cung", "Địa Chi"], ln.bang.map((r) =>
+    `<tr class="${r.thang_am === ln.thang_am ? "current" : ""}"><td>${r.thang_am}</td><td>${esc(r.cung_ten)}</td><td>${esc(r.dia_chi)}</td></tr>`).join(""));
+  const ngay = tbl(["Ngày âm", "Dương lịch", "Cung"], lh.bang.map((r) =>
+    `<tr class="${r.ngay_am === lh.ngay_am ? "current" : ""}"><td>${r.ngay_am}</td><td>${esc(r.duong)}</td><td>${esc(r.cung_ten)}</td></tr>`).join(""));
+  const gio = tbl(["Giờ", "Cung"], lt.bang.map((r) =>
+    `<tr class="${r.gio_so === lt.gio_so ? "current" : ""}"><td>${esc(r.gio)}</td><td>${esc(r.cung_ten)}</td></tr>`).join(""));
+  return `<div class="card table-card"><h2>Lưu nguyệt · 12 tháng âm ${esc(ln.nam_am)}</h2>${thang}
+      <p class="hint">${esc(ln.phuong_phap)}</p></div>
+    <div class="card table-card"><h2>Lưu nhật · ${esc(lh.so_ngay_trong_thang)} ngày tháng ${esc(lh.thang_am)}</h2>${ngay}
+      <p class="hint">${esc(lh.phuong_phap)}</p></div>
+    <div class="card table-card"><h2>Lưu thời · ngày xem</h2>${gio}
+      <p class="hint">${esc(lt.phuong_phap)}</p></div>`;
 }
 
 function palaceNameBySo(result, so) {

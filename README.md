@@ -19,10 +19,14 @@
 
 Bàn số có nhãn hạn trên từng cung: ĐV, LNĐV, TV, LN, LNg (lưu nguyệt), LNh (lưu nhật), LT (lưu thời).
 
-### Ghi chú về lớp hạn
-- **Lưu nguyệt**: tháng xác định theo tiết khí (Solar Longitude), cung là cung có Địa Chi của tháng đó; đúng theo `calculate_van_layers` của engine gốc. Nếu ngày xem sát giao tiết khí, engine sẽ cảnh báo cần giờ/phút.
-- **Lưu nhật**: Can Chi của ngày xem (Julian Day), cung tương ứng trên lá số.
-- **Lưu thời**: Can Chi giờ từ Can ngày + Chi giờ xem.
+### Quy tắc Đấu quân, Lưu nguyệt, Lưu nhật, Lưu thời (app tự tính, `engine/app_bridge.py`)
+- **Đấu quân năm sinh**: Địa Chi năm sinh (âm) làm tháng Giêng, nghịch đến tháng sinh (âm), rồi thuận đến giờ sinh thì dừng. Các năm sau Đấu quân thuận bàn, mỗi năm một cung.
+- **Lưu nguyệt**: tháng Giêng âm tại Đấu quân, các tháng sau thuận bàn, mỗi tháng một cung.
+- **Lưu nhật**: mồng 1 âm tại cung Lưu nguyệt, thuận, mỗi ngày một cung đến hết tháng.
+- **Lưu thời**: tại cung Lưu nhật, thuận; Tý = cung Lưu nhật, mỗi canh giờ một cung.
+- Ví dụ kiểm thử: nam 11/11/1996 giờ Tý (âm 1/10/1996) → Đấu quân Mão → tháng 1 âm 2026 ở Dậu (Phu thê).
+
+Tháng/ngày âm được đổi từ dương lịch bằng lịch của engine. Số ngày trong tháng âm được xác định bằng cách đổi từng ngày dương.
 
 ### Chưa có trong APK
 Luận giải bằng AI (cần API key và server), kiểm toán dữ liệu, so sánh hai lá số, xuất file. Các phần này nằm trong repo gốc luangiaibysun.
@@ -70,5 +74,5 @@ Yêu cầu Android 7.0 trở lên (`minSdkVersion 24`), vì Pyodide cần WebAss
 
 ## Nguồn và giới hạn
 - Engine an sao: `suneJQK/luangiaibysun` (commit `ef5d9bd`). Repo `luangiaibysun-clean` không truy cập được khi tích hợp nên dùng repo này.
-- Lỗi đã biết của engine gốc và đã xử lý trong `app_bridge.py`: Lưu niên năm trả về cung rỗng (tra cung theo Chi kiểu số), và Lưu nguyệt/nhật/thời trả cung dạng số `cung_so` (được đổi sang tên cung).
+- Lỗi đã biết của engine gốc và đã xử lý trong `app_bridge.py`: Lưu niên năm trả về cung rỗng (tra cung theo Chi kiểu số). Lưu nguyệt/nhật/thời của engine gốc dùng tiết khí nên không khớp quy tắc trên; app đã thay bằng quy tắc Đấu quân ở trên.
 - APK bản debug, chưa ký phát hành (release) và chưa đưa lên Google Play.

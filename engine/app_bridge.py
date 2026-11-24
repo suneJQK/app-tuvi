@@ -14,10 +14,13 @@ Entry point duy nhất từ JS: ``tinh_la_so(payload_json) -> json``.
 from __future__ import annotations
 
 import json
+from datetime import date, timedelta
 from typing import Any
 
 from chart_sanitizer import normalize_engine_chart
 from tu_vi_calculator import calculate_chart
+from tuvi_engine._engine.AmDuong import ngayThangNam
+from tuvi_engine.engine.date_handler import normalize_birth_input
 from tuvi_engine.rules.analysis import analyze_chart
 from tuvi_engine.star_registry import star_catalog
 from tuvi_lap_so_engine import lap_la_so
@@ -122,6 +125,108 @@ def _star_view(star: Any, group: str) -> dict[str, Any]:
         "ngu_hanh": element_label(star.get("ngu_hanh") or star.get("saoNguHanh")),
         "dac_tinh": DAC_TINH_LABEL.get(str(dac), ""),
     }
+
+
+# ----------------------------------------------------------- Lưu nguyệt / nhật / thời
+# Quy tắc (theo yêu cầu nghiệp vụ, KHÔNG dùng tiết khí của engine gốc):
+#   Đấu quân năm sinh: lấy cung Địa Chi năm sinh (âm lịch) làm tháng Giêng, nghịch đếm
+#   tới tháng sinh (âm), rồi thuận đếm tới giờ sinh thì dừng -> Đấu quân năm sinh.
+#   Các năm sau: Đấu quân thuận bàn, mỗi năm một cung.
+#   Lưu nguyệt: tháng Giêng tại Đấu quân, các tháng sau thuận bàn, mỗi tháng một cung.
+#   Lưu nhật: mồng 1 tại cung Lưu nguyệt, thuận, mỗi ngày một cung.
+#   Lưu thời: tại cung Lưu nhật, thuận, mỗi canh giờ một cung (Tý = cung Lưu nhật).
+
+def solar_to_lunar(d: int, m: int, y: int, tz: float) -> tuple[int, int, int]:
+    """Dương lịch -> âm lịch (ngày, tháng, năm) bằng lịch của engine."""
+    ld, lm, ly = ngayThangNam(int(d), int(m), int(y), True, float(tz))[:3]
+    return int(ld), int(lm), int(ly)
+
+
+def dau_quan_nam_sinh(lunar_year: int, lunar_month: int, gio_idx: int) -> int:
+    """Chỉ số Địa Chi (Tý=0) của Đấu quân năm sinh."""
+    base = (int(lunar_year) - 4) % 12          # Địa Chi năm sinh = cung tháng Giêng
+    return (base - (int(lunar_month) - 1) + (int(gio_idx) - 1)) % 12
+
+
+def dau_quan_nam(dau_quan_sinh: int, birth_lunar_year: int, year: int) -> int:
+    """Đấu quân năm `year` (âm): thuận bàn một cung mỗi năm kể từ năm sinh."""
+    return (dau_quan_sinh + (int(year) - int(birth_lunar_year))) % 12
+
+
+def _cung_at(chart: dict[str, Any], idx: int) -> dict[str, Any] | None:
+    return cung_by_so(chart, (int(idx) % 12) + 1)
+
+
+def _lunar_month_length(view: date, tz: float, ld: int, lm: int, ly: int) -> int:
+    start = view - timedelta(days=ld - 1)   # dương lịch của mồng 1 âm
+    count = 0
+    for _ in range(31):
+        cur = start + timedelta(days=count)
+        l_d, l_m, l_y = solar_to_lunar(cur.day, cur.month, cur.year, tz)
+        if (l_m, l_y) != (lm, ly):
+            break
+        count += 1
+    return count
+
+
+def luu_han_theo_quy_tac(
+    chart: dict[str, Any],
+    birth: dict[str, Any],
+    view: date,
+    gio_xem: int | None,
+    tz: float,
+) -> dict[str, Any]:
+    """Đấu quân, Lưu nguyệt (12 tháng), Lưu nhật (các ngày tháng xem), Lưu thời (12 giờ)."""
+    b_ld, b_lm, b_ly = birth["lunar"]
+    gio_idx = birth["gio_idx"]
+    dq_sinh = dau_quan_nam_sinh(b_ly, b_lm, gio_idx)
+
+    ld, lm, ly = solar_to_lunar(view.day, view.month, view.year, tz)
+    dq = dau_quan_nam(dq_sinh, b_ly, ly)
+    month_start = (dq + lm - 1) % 12           # cung của mồng 1 tháng xem
+    day_idx = (month_start + ld - 1) % 12      # cung của ngày xem
+
+    def ten(idx: int) -> dict[str, Any]:
+        pal = _cung_at(chart, idx)
+        return {"cung_ten": pal.get("cung") if pal else None, "dia_chi": BRANCH_ORDER[idx % 12]}
+
+    bang_thang = [{"thang_am": k, **ten((dq + k - 1) % 12)} for k in range(1, 13)]
+    n_days = _lunar_month_length(view, tz, ld, lm, ly)
+    bang_ngay = []
+    for dd in range(1, n_days + 1):
+        solar_d = view + timedelta(days=dd - ld)
+        bang_ngay.append({"ngay_am": dd, "duong": solar_d.isoformat(),
+                          **ten((month_start + dd - 1) % 12)})
+    bang_gio = [{"gio": BRANCH_ORDER[h - 1], "gio_so": h, **ten((day_idx + h - 1) % 12)}
+                for h in range(1, 13)]
+
+    chosen_thang = {"thang_am": lm, **ten((dq + lm - 1) % 12)}
+    nguyet = {
+        "nam_am": ly, "thang_am": lm, "cung_ten": chosen_thang["cung_ten"],
+        "dia_chi": chosen_thang["dia_chi"], "bang": bang_thang,
+        "phuong_phap": "Đấu quân năm xem thuận bàn; tháng Giêng tại Đấu quân, mỗi tháng một cung.",
+    }
+    nhat = {
+        "ngay_am": ld, "thang_am": lm, "duong": view.isoformat(),
+        "cung_ten": ten(day_idx)["cung_ten"], "dia_chi": ten(day_idx)["dia_chi"],
+        "bang": bang_ngay, "so_ngay_trong_thang": n_days,
+        "phuong_phap": "Mồng 1 tại cung Lưu nguyệt, thuận, mỗi ngày một cung.",
+    }
+    thoi = {
+        "gio_so": gio_xem,
+        "gio": BRANCH_ORDER[gio_xem - 1] if gio_xem else None,
+        "cung_ten": ten((day_idx + gio_xem - 1) % 12)["cung_ten"] if gio_xem else None,
+        "bang": bang_gio,
+        "phuong_phap": "Tại cung Lưu nhật, thuận, mỗi canh giờ một cung (Tý = cung Lưu nhật).",
+    }
+    pal_dq = ten(dq)
+    dau_quan_info = {
+        "nam_am": ly, "cung_ten": pal_dq["cung_ten"], "dia_chi": pal_dq["dia_chi"],
+        "dau_quan_sinh_cung_ten": ten(dq_sinh)["cung_ten"], "dau_quan_sinh_dia_chi": ten(dq_sinh)["dia_chi"],
+        "phuong_phap": "Đấu quân năm sinh: Địa Chi năm sinh làm tháng Giêng, nghịch đến tháng sinh (âm), "
+                       "thuận đến giờ sinh. Các năm sau thuận bàn một cung mỗi năm.",
+    }
+    return {"dau_quan": dau_quan_info, "luu_nguyet": nguyet, "luu_nhat": nhat, "luu_thoi": thoi}
 
 
 # ----------------------------------------------------------------- views
@@ -325,9 +430,6 @@ def han_hien_tai(chart: dict[str, Any]) -> dict[str, Any]:
         luu_nien["cung_nam_ten"] = (palace_year or {}).get("cung")
         luu_nien["cung_nam_dia_chi"] = branch_of(palace_year or {})
     return {
-        "luu_nguyet": named(pick("luu_nguyet"), "cung"),
-        "luu_nhat": named(pick("luu_nhat"), "cung", "nhat_than_cung"),
-        "luu_thoi": named(pick("luu_thoi"), "cung"),
         "luu_nien": luu_nien,
         "tieu_van": van.get("tieu_van"),
         "dai_van": (van.get("dai_van") or {}).get("dang_xet") if isinstance(van.get("dai_van"), dict) else None,
@@ -374,6 +476,18 @@ def tinh_la_so(payload: str) -> str:
         chart["viewing"] = {"year": nam_xem, "month": thang_xem, "day": ngay_xem, "hour": gio_xem}
         chart.pop("ai_context", None)
 
+        norm = normalize_birth_input(ngay, thang, nam, p["gio_sinh"], p["gioi_tinh"], "", duong, tz)
+        birth_lunar = solar_to_lunar(ngay, thang, nam, tz) if duong else (ngay, thang, nam)
+        han_moi: dict[str, Any] = {}
+        if thang_xem and ngay_xem:
+            han_moi = luu_han_theo_quy_tac(
+                chart,
+                {"lunar": birth_lunar, "gio_idx": norm.hour},
+                date(nam_xem, thang_xem, ngay_xem),
+                gio_xem,
+                tz,
+            )
+
         palaces = as_list(chart.get("12_cung"))
         result = {
             "chart": chart,
@@ -381,7 +495,7 @@ def tinh_la_so(payload: str) -> str:
             "cach_cuc": cach_cuc_view(chart),
             "sao": star_directory(chart),
             "van": van_table(chart),
-            "han": han_hien_tai(chart),
+            "han": {**han_hien_tai(chart), **han_moi},
             "relations": {str(pl.get("cung")): palace_relations(chart, str(pl.get("cung"))) for pl in palaces},
             "palaces": [
                 {
