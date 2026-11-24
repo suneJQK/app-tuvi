@@ -165,10 +165,20 @@ export function renderBoard(result, selected) {
       </div>`;
   }).join("");
   const t = result.summary;
+  const h = result.han || {};
+  const ln = h.luu_nguyet, lnh = h.luu_nhat, lt = h.luu_thoi;
+  const at = (x) => (x ? esc(x) : "—");
   const center = `<div class="center">
-      <div class="big">${esc(t.ten)}</div>
+      <div class="big">${esc(t.ten || "Lá số")}</div>
       <div class="sub">${esc(t.can_chi_nam)} · ${esc(t.ten_cuc)}</div>
       <div class="sub">${esc(result.chart.input?.lich || "")} · ${esc(result.chart.input?.gioi_tinh || "")}</div>
+      <div class="center-luu">
+        <div><span>Tháng</span><b>${esc(ln?.thang_am ?? "")}</b>${at(ln?.cung_ten)}</div>
+        <div><span>Ngày</span><b>${esc(lnh?.ngay_am ?? "")}</b>${at(lnh?.cung_ten)}</div>
+        <div><span>Giờ</span><b>${esc(lt?.gio || "")}</b>${at(lt?.cung_ten)}</div>
+      </div>
+      <div class="sub">Xem ${esc(lnh?.duong || "")}</div>
+      <div class="legend">T tháng · N ngày · G giờ (Lưu)</div>
     </div>`;
   return cells + center;
 }

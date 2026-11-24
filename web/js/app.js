@@ -2,7 +2,7 @@
 import { createEngine } from "./engine.js";
 import {
   CHI, GIO_LABEL, esc, renderBoard, renderCach, renderHanCards, renderPalaceDetail,
-  renderHanStrip, renderLuuBang, renderLuuDai, renderProfiles, renderSao, renderSummary, renderVanTable,
+  renderLuuBang, renderProfiles, renderSao, renderSummary, renderVanTable,
 } from "./render.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -95,18 +95,20 @@ function compute(birth, view) {
 function renderAll() {
   const r = state.result;
   $("#la-so-empty").classList.toggle("hidden", !!r);
+  if (!r) { $("#birth-bar").classList.add("hidden"); $("#form-birth").classList.remove("hidden"); }
   $("#la-so-result").classList.toggle("hidden", !r);
   $("#van-empty").classList.toggle("hidden", !!r);
   $("#van-result").classList.toggle("hidden", !r);
   $("#cach-empty").classList.toggle("hidden", !!r);
   $("#sao-empty").classList.toggle("hidden", !!r);
   $("#sao-result").classList.toggle("hidden", !r);
-  $("#btn-save").disabled = !r;
+  $("#btn-save-bar").disabled = !r;
   $("#cach-result").innerHTML = r ? renderCach(r) : "";
   if (!r) return;
 
-  $("#summary").innerHTML = renderSummary(r);
-  $("#han-strip").innerHTML = renderHanStrip(r) + renderLuuDai(r);
+  $("#birth-text").textContent = `${state.birth.ten || "Không tên"} · ${pad(state.birth.ngay)}/${pad(state.birth.thang)}/${state.birth.nam} · ${state.birth.gioi_tinh} · giờ ${state.birth.gio_sinh}`;
+  $("#birth-bar").classList.remove("hidden");
+  $("#form-birth").classList.add("hidden");
   $("#board").innerHTML = renderBoard(r, state.selected);
   $("#palace-detail").innerHTML = renderPalaceDetail(r, state.selected);
 
@@ -125,6 +127,7 @@ function selectPalace(name) {
     el.classList.toggle("selected", el.dataset.cung === name);
   });
   $("#palace-detail").innerHTML = renderPalaceDetail(state.result, name);
+  $("#palace-wrap").open = true;
 }
 
 // ------------------------------------------------------------ hồ sơ
@@ -155,6 +158,11 @@ function bindEvents() {
     if (btn.dataset.view === "view-ho-so") renderProfilesView();
   }));
 
+  $("#btn-edit").addEventListener("click", () => {
+    $("#form-birth").classList.remove("hidden");
+    $("#birth-bar").classList.add("hidden");
+  });
+
   $("#form-birth").addEventListener("submit", (ev) => {
     ev.preventDefault();
     try {
@@ -168,7 +176,7 @@ function bindEvents() {
     }
   });
 
-  $("#btn-save").addEventListener("click", () => {
+  $("#btn-save-bar").addEventListener("click", () => {
     if (!state.birth) return;
     const list = loadProfiles();
     const key = JSON.stringify(state.birth);
