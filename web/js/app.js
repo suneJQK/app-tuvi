@@ -151,8 +151,16 @@ function renderProfilesView() {
 // ------------------------------------------------------------ sự kiện
 
 function bindEvents() {
+  const setMenu = (open) => {
+    $("#menu").classList.toggle("hidden", !open);
+    $("#btn-menu").setAttribute("aria-expanded", String(open));
+  };
+  $("#btn-menu").addEventListener("click", () => setMenu($("#menu").classList.contains("hidden")));
+  $("#btn-menu-close").addEventListener("click", () => setMenu(false));
+  $("#menu").addEventListener("click", (ev) => { if (ev.target.id === "menu") setMenu(false); });
   document.querySelectorAll(".fn").forEach((btn) => btn.addEventListener("click", () => {
-    document.querySelectorAll(".fn").forEach((b) => b.classList.toggle("active", b === btn));
+    setMenu(false);
+    document.querySelectorAll(".fn").forEach((b) => b.classList.toggle("active", b.dataset.view === btn.dataset.view));
     document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.id === btn.dataset.view));
     window.scrollTo({ top: 0 });
     if (btn.dataset.view === "view-ho-so") renderProfilesView();

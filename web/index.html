@@ -14,15 +14,20 @@
     <h1>Tử Vi Đẩu Số</h1>
     <span id="engine-status" class="status">Đang khởi động…</span>
     <span id="build-tag" class="status build-tag">build __BUILD__</span>
+    <button type="button" class="btn small-btn" id="btn-menu" aria-expanded="false" aria-controls="menu">⚙ Cài đặt</button>
   </header>
 
-  <nav class="fn-bar" aria-label="Chức năng">
-    <button class="fn active" data-view="view-la-so"><i>🏠</i>Lá số</button>
-    <button class="fn" data-view="view-van"><i>⏳</i>Vận hạn</button>
-    <button class="fn" data-view="view-cach"><i>✦</i>Cách cục</button>
-    <button class="fn" data-view="view-sao"><i>★</i>Danh bạ sao</button>
-    <button class="fn" data-view="view-ho-so"><i>💾</i>Hồ sơ</button>
-  </nav>
+  <div id="menu" class="menu hidden" role="dialog" aria-label="Cài đặt và chức năng">
+    <div class="menu-card">
+      <h2>Chức năng</h2>
+      <button class="fn" data-view="view-la-so"><i>🏠</i>Lá số</button>
+      <button class="fn" data-view="view-van"><i>⏳</i>Vận hạn</button>
+      <button class="fn" data-view="view-cach"><i>✦</i>Cách cục</button>
+      <button class="fn" data-view="view-sao"><i>★</i>Danh bạ sao</button>
+      <button class="fn" data-view="view-ho-so"><i>💾</i>Hồ sơ</button>
+      <button type="button" class="btn" id="btn-menu-close">Đóng</button>
+    </div>
+  </div>
 
   <main>
     <!-- 1. Lập lá số -->
