@@ -1,0 +1,11 @@
+{
+  "appId": "vn.tuvi.app",
+  "appName": "Tử Vi",
+  "webDir": "www",
+  "backgroundColor": "#1b1a17",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

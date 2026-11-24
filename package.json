@@ -1,0 +1,22 @@
+{
+  "name": "app-tuvi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App Tử Vi Đẩu Số (APK) — an sao bằng engine luangiaibysun, chạy offline trên Android",
+  "type": "module",
+  "scripts": {
+    "build:www": "node scripts/build-www.mjs",
+    "test": "node --test tests/engine.test.mjs",
+    "android:sync": "npm run build:www && npx cap sync android",
+    "android:open": "npx cap open android"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@capacitor/android": "^6.2.3",
+    "@capacitor/core": "^6.2.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.3",
+    "pyodide": "^0.27.7"
+  }
+}

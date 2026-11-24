@@ -1,0 +1,214 @@
+// Hàm dựng HTML thuần từ kết quả engine. Mọi chuỗi đưa vào HTML đều đi qua esc().
+
+export const CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+export const GIO_LABEL = ["23–01", "01–03", "03–05", "05–07", "07–09", "09–11", "11–13", "13–15", "15–17", "17–19", "19–21", "21–23"];
+const ELEMENT_CLASS = { "Kim": "el-kim", "Mộc": "el-moc", "Thủy": "el-thuy", "Hỏa": "el-hoa", "Thổ": "el-tho" };
+const TAG = {
+  dai_van: { abbr: "ĐV", title: "Đại vận hiện tại" },
+  luu_nien_dai_van: { abbr: "LNĐV", title: "Lưu niên Đại vận" },
+  tieu_van: { abbr: "TV", title: "Tiểu vận" },
+  luu_nien_nam: { abbr: "LN", title: "Lưu niên (Chi năm)" },
+  luu_nguyet: { abbr: "LNg", title: "Lưu nguyệt (tháng tiết khí)" },
+  luu_nhat: { abbr: "LNh", title: "Lưu nhật (ngày xem)" },
+  luu_thoi: { abbr: "LT", title: "Lưu thời (giờ xem)" },
+};
+
+export function esc(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+const dacLabel = (star) => (star.dac_tinh ? `<span class="dac">(${esc(star.dac_tinh)})</span>` : "");
+const palaceByName = (result, name) => result.palaces.find((p) => p.cung === name);
+
+/** Tên cung đang chịu từng lớp hạn cho năm xem (dùng để gắn nhãn lên bàn số). */
+export function hanTags(result) {
+  const year = result.chart.viewing?.year;
+  const row = (result.van.rows || []).find((r) => r.nam === year) || {};
+  const han = result.han || {};
+  const dv = result.van.dai_van_hien_tai;
+  const dvPalace = dv ? result.palaces.find((p) => p.cung_so === dv.cung_so) : null;
+  return {
+    dai_van: dvPalace?.cung,
+    luu_nien_dai_van: row.luu_nien_dai_van?.cung,
+    tieu_van: row.tieu_van?.cung,
+    luu_nien_nam: row.luu_nien_nam?.cung,
+    luu_nguyet: han.luu_nguyet?.cung_ten,
+    luu_nhat: han.luu_nhat?.cung_ten,
+    luu_thoi: han.luu_thoi?.cung_ten,
+  };
+}
+
+export function renderSummary(result) {
+  const s = result.summary;
+  const items = [
+    ["Họ tên", s.ten],
+    ["Năm sinh (Can Chi)", s.can_chi_nam],
+    ["Bản mệnh", s.ban_menh],
+    ["Cục", s.ten_cuc],
+    ["Mệnh chủ / Thân chủ", `${s.menh_chu} / ${s.than_chu}`],
+    ["Âm dương · Ngũ hành", `${s.am_duong_menh} · ${s.sinh_khac}`],
+    ["Cung Mệnh", s.cung_menh],
+    ["Cung Thân", s.cung_than],
+    ["Số sao · Cách Cục", `${s.so_sao} sao · ${s.so_cach_cuc} Cách Cục`],
+    ["Lịch", result.chart.input?.lich || ""],
+  ];
+  return `<h2>Tóm tắt lá số</h2><div class="summary">${items
+    .map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v || "—")}</b></div>`).join("")}</div>`;
+}
+
+export function renderBoard(result, selected) {
+  const tags = hanTags(result);
+  const cells = result.palaces.map((p) => {
+    const row = p.vi_tri?.row ?? 1;
+    const col = p.vi_tri?.column ?? 1;
+    const badges = [
+      p.than_cu ? `<span class="badge than">Thân</span>` : "",
+      p.tuan ? `<span class="badge tuan">Tuần</span>` : "",
+      p.triet ? `<span class="badge triet">Triệt</span>` : "",
+    ].join("");
+    const hanBadges = Object.entries(tags)
+      .filter(([, cung]) => cung === p.cung)
+      .map(([key]) => `<span class="badge han" title="${esc(TAG[key].title)}">${esc(TAG[key].abbr)}</span>`)
+      .join("");
+    const main = p.chinh_tinh.map((s) => `<div class="main-stars">${esc(s.ten)} ${dacLabel(s)}</div>`).join("");
+    const minor = p.phu_tinh.map((s) => esc(s.ten)).join(" · ");
+    const dvRange = p.dai_van != null ? `${p.dai_van}–${p.dai_van + 9}` : "";
+    const elClass = ELEMENT_CLASS[p.ngu_hanh] || "";
+    return `
+      <div class="cell ${p.cung === selected ? "selected" : ""} ${p.cung === "Mệnh" ? "menh" : ""}"
+           style="grid-row:${row};grid-column:${col}" role="button" tabindex="0" data-cung="${esc(p.cung)}"
+           aria-label="Cung ${esc(p.cung)}">
+        <div class="cell-head"><span class="cell-name ${elClass}">${esc(p.cung)}</span><span class="cell-chi">${esc(p.can_chi)}</span></div>
+        <div class="badges">${badges}${hanBadges}</div>
+        ${main}
+        <div class="minor-stars">${minor}</div>
+        <div class="cell-foot"><span>${esc(p.ngu_hanh)} · ${esc(p.trang_sinh || "")}</span><span>${dvRange}</span></div>
+      </div>`;
+  }).join("");
+  const t = result.summary;
+  const center = `<div class="center">
+      <div class="big">${esc(t.ten)}</div>
+      <div class="sub">${esc(t.can_chi_nam)} · ${esc(t.ten_cuc)}</div>
+      <div class="sub">${esc(result.chart.input?.lich || "")} · ${esc(result.chart.input?.gioi_tinh || "")}</div>
+    </div>`;
+  return cells + center;
+}
+
+export function renderPalaceDetail(result, cungName) {
+  const p = palaceByName(result, cungName);
+  if (!p) return `<div class="empty">Chọn một cung.</div>`;
+  const rel = result.relations[cungName] || {};
+  const relGroup = (title, list) => (list && list.length
+    ? `<div class="rel-group"><h3>${esc(title)}</h3>${list.map((r) => `
+        <div class="rel-item"><b>${esc(r.cung)}</b> <small>${esc(r.dia_chi)} · ${esc(r.can_chi)} · ${esc(r.ngu_hanh)}</small>
+        <div class="small">${r.chinh_tinh.length ? esc(r.chinh_tinh.join(", ")) : "<span class='muted'>Không có chính tinh</span>"}</div></div>`).join("")}</div>`
+    : "");
+  const tags = hanTags(result);
+  const hanNames = Object.entries(tags).filter(([, c]) => c === cungName).map(([k]) => TAG[k].title);
+  const dvRange = p.dai_van != null ? `${p.dai_van}–${p.dai_van + 9} tuổi` : "—";
+  return `
+    <h2>Cung ${esc(p.cung)} · ${esc(p.can_chi)}</h2>
+    <div class="detail-grid">
+      <div class="kv">Địa chi: <b>${esc(p.dia_chi)}</b></div>
+      <div class="kv">Ngũ hành: <b class="${ELEMENT_CLASS[p.ngu_hanh] || ""}">${esc(p.ngu_hanh)}</b></div>
+      <div class="kv">Âm dương: <b>${esc(p.am_duong)}</b></div>
+      <div class="kv">Tràng sinh: <b>${esc(p.trang_sinh || "—")}</b></div>
+      <div class="kv">Đại vận: <b>${esc(dvRange)}</b></div>
+      <div class="kv">Tiểu vận (Chi): <b>${esc(p.tieu_van_chi || "—")}</b></div>
+      <div class="kv">Thân cư: <b>${p.than_cu ? "Có" : "Không"}</b> · Tuần: <b>${p.tuan ? "Có" : "Không"}</b> · Triệt: <b>${p.triet ? "Có" : "Không"}</b></div>
+      <div class="kv">Đang hạn năm xem: <b>${esc(hanNames.join(", ") || "—")}</b></div>
+    </div>
+    <h3>Chính tinh</h3>
+    ${p.chinh_tinh.length ? p.chinh_tinh.map((s) => `<div class="rel-item"><b>${esc(s.ten)}</b> ${dacLabel(s)} <small>${esc(s.ngu_hanh)}</small></div>`).join("") : "<div class='muted small'>Không có</div>"}
+    <h3>Phụ tinh</h3>
+    <div class="small">${p.phu_tinh.length ? p.phu_tinh.map((s) => `${esc(s.ten)}${s.dac_tinh ? ` (${esc(s.dac_tinh)})` : ""}`).join(" · ") : "Không có"}</div>
+    <h3>Quan hệ cung (suy từ Địa Chi)</h3>
+    ${relGroup("Tam Hợp", rel.tam_hop)}${relGroup("Xung Chiếu", rel.xung_chieu)}${relGroup("Nhị Hợp", rel.nhi_hop)}${relGroup("Giáp Cung", rel.giap_cung)}
+  `;
+}
+
+export function renderHanCards(result) {
+  const v = result.van;
+  const h = result.han || {};
+  const year = result.chart.viewing?.year;
+  const row = (v.rows || []).find((r) => r.nam === year) || {};
+  const dv = v.dai_van_hien_tai;
+  const card = (label, main, sub = "") => `<div class="han-item"><span>${esc(label)}</span><b>${esc(main || "—")}</b>${sub ? `<div class="sub">${esc(sub)}</div>` : ""}</div>`;
+  const lg = h.luu_nguyet;
+  const lh = h.luu_nhat;
+  const lt = h.luu_thoi;
+  const view = result.chart.viewing || {};
+  return `
+    <h2>Hạn tại thời điểm xem</h2>
+    <div class="small muted" style="margin-bottom:8px">Năm ${esc(year)} · tuổi ${esc(v.tuoi ?? "—")} · ngày ${esc(view.day ?? "—")}/${esc(view.month ?? "—")}/${esc(year)}${view.hour ? ` · giờ ${esc(CHI[view.hour - 1])}` : ""}</div>
+    <div class="han-cards">
+      ${card("Đại vận", dv ? (dv.cung || palaceNameBySo(result, dv.cung_so)) : "—", dv ? `${dv.tuoi_bat_dau}–${dv.tuoi_ket_thuc} tuổi · ${v.huong_vong_van || ""}` : "")}
+      ${card("Lưu niên Đại vận", row.luu_nien_dai_van?.cung, "Theo Đại vận hiện tại")}
+      ${card("Tiểu vận", row.tieu_van?.cung, "Theo Chi năm xem")}
+      ${card("Lưu niên năm", row.luu_nien_nam?.cung, row.luu_nien_nam?.can_chi ? `Năm ${row.luu_nien_nam.can_chi}` : "")}
+      ${card("Lưu nguyệt (tháng)", lg ? `${lg.can_ten} ${lg.chi_ten} · ${lg.cung_ten || "—"}` : "Chọn ngày xem", lg ? `Tháng ${lg.thang_duong} dương lịch · theo tiết khí` : "")}
+      ${card("Lưu nhật (ngày)", lh ? `${lh.can_ten} ${lh.chi_ten} · ${lh.cung_ten || "—"}` : "Chọn ngày xem", lh ? `Ngày ${lh.ngay} · Can Chi ngày` : "")}
+      ${card("Lưu thời (giờ)", lt ? `${lt.can_ten} ${lt.chi_ten} · ${lt.cung_ten || "—"}` : "Chọn giờ xem", "")}
+      ${card("Lưu niên (Chi năm xem)", h.luu_nien?.cung_nam_ten, h.luu_nien?.chi_nam_ten ? `Chi ${h.luu_nien.chi_nam_ten}` : "")}
+    </div>
+    ${lg?.warning ? `<p class="hint">${esc(lg.warning)}</p>` : ""}`;
+}
+
+function palaceNameBySo(result, so) {
+  return result.palaces.find((p) => p.cung_so === so)?.cung || "—";
+}
+
+export function renderVanTable(result) {
+  const v = result.van;
+  const year = result.chart.viewing?.year;
+  const rows = (v.rows || []).map((r) => `
+    <tr class="${r.nam === year ? "current" : ""}">
+      <td>${esc(r.nam)}</td><td>${esc(r.tuoi)}</td>
+      <td>${esc(r.luu_nien_dai_van?.cung || "—")}</td>
+      <td>${esc(r.tieu_van?.cung || "—")}</td>
+      <td>${esc(r.luu_nien_nam?.cung || "—")}<div class="small muted">${esc(r.luu_nien_nam?.can_chi || "")}</div></td>
+    </tr>`).join("");
+  return `<h2>Bảng 10 năm</h2>
+    <table><thead><tr><th>Năm</th><th>Tuổi</th><th>Lưu niên Đại vận</th><th>Tiểu vận</th><th>Lưu niên năm</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <p class="hint">Dòng được tô sáng là năm đang xem. Đại vận hiện tại: ${esc(v.dai_van_hien_tai ? (v.dai_van_hien_tai.cung || palaceNameBySo(result, v.dai_van_hien_tai.cung_so)) : "—")}.</p>`;
+}
+
+export function renderCach(result) {
+  const items = result.cach_cuc.items || [];
+  if (!items.length) return `<div class="card empty">Lá số này không khớp Cách Cục nào trong bộ rule của engine.</div>`;
+  return items.map((it) => `
+    <div class="card cach-item ${it.kind === "modifier" ? "modifier" : ""}">
+      <h3>${esc(it.name)} <span class="badge">${it.kind === "modifier" ? "Phá/giảm cấp" : "Cách Cục"}</span></h3>
+      <div class="small">${esc(it.description || "")}</div>
+      ${it.interpretation ? `<p class="small">${esc(it.interpretation)}</p>` : ""}
+      <div class="evidence">Bằng chứng: ${it.evidence.length ? esc(it.evidence.map((e) => (typeof e === "string" ? e : (e.cung || e.name || JSON.stringify(e)))).join(" · ")) : "—"}</div>
+      <div class="evidence">Mã rule: ${esc(it.rule_id)}</div>
+    </div>`).join("");
+}
+
+export function renderSao(result, query) {
+  const q = (query || "").trim().toLowerCase();
+  const list = result.sao.filter((s) => !q || s.ten.toLowerCase().includes(q));
+  if (!list.length) return `<div class="card empty">Không có sao khớp “${esc(query)}”.</div>`;
+  return list.map((s) => `
+    <div class="star-row" data-star="${esc(s.ten)}">
+      <div class="top"><b>${esc(s.ten)}</b><span class="small muted">${esc(s.nhom)} · ${esc(s.ngu_hanh)} · ${s.cung.length} cung</span></div>
+      <div class="cungs">${s.cung.map((c) => `${esc(c.cung)} (${esc(c.dia_chi)})${c.dac_tinh ? ` · ${esc(c.dac_tinh)}` : ""}`).join("<br>")}
+        ${s.phuong_vi ? `<br><span class="muted">Phương vị: ${esc(s.phuong_vi)}</span>` : ""}</div>
+    </div>`).join("");
+}
+
+export function renderProfiles(profiles) {
+  if (!profiles.length) return `<div class="card empty">Chưa có hồ sơ nào. Lập lá số rồi bấm <b>Lưu hồ sơ</b>.</div>`;
+  return profiles.map((p, i) => `
+    <div class="card profile">
+      <div><b>${esc(p.label)}</b><div class="meta">${esc(p.summary)}</div></div>
+      <div class="actions">
+        <button class="btn small-btn" data-open="${i}">Mở</button>
+        <button class="btn small-btn danger" data-del="${i}">Xóa</button>
+      </div>
+    </div>`).join("");
+}
