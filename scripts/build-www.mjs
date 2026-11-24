@@ -1,6 +1,7 @@
 // Gom web/ + engine Python + runtime Pyodide vào thư mục www/ (webDir của Capacitor).
 // Chạy: npm run build:www
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +12,15 @@ mkdirSync(out, { recursive: true });
 
 // 1) Giao diện
 cpSync(join(root, "web"), out, { recursive: true });
+
+// Gắn mã build (commit ngắn + giờ) vào giao diện để nhận biết đang chạy bản nào.
+{
+  let rev = "dev";
+  try { rev = execSync("git rev-parse --short HEAD", { cwd: root }).toString().trim(); } catch {}
+  const stamp = `${rev} · ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+  const idx = join(out, "index.html");
+  writeFileSync(idx, readFileSync(idx, "utf8").replace("__BUILD__", stamp));
+}
 
 // 2) Runtime Pyodide (chỉ các file cần thiết để chạy Python stdlib)
 const pyodideDir = join(root, "node_modules", "pyodide");
