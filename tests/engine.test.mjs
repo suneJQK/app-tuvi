@@ -147,3 +147,20 @@ test("các hàm render chạy trên kết quả thật và có escape HTML", () 
   assert.ok(html.includes("Lưu nguyệt") && html.includes("Lưu nhật") && html.includes("Lưu thời"));
   assert.equal((R.renderBoard(r, "Mệnh").match(/class="cell /g) || []).length, 12);
 });
+
+test("sao trên bàn: chính tinh riêng, sao tốt bên trái, hung tinh bên phải", () => {
+  const r = engine.tinhLaSo({ ...BIRTH, ...VIEW });
+  for (const p of r.palaces) {
+    for (const c of p.chinh_tinh) assert.equal(c.kind, "chinh");
+    for (const f of p.phu_tinh) assert.ok(["tot", "hung"].includes(f.kind), `${p.cung}: ${f.ten}`);
+  }
+  const all = r.palaces.flatMap((p) => p.phu_tinh);
+  const kinh = all.find((s) => s.ten === "Kình dương");
+  if (kinh) assert.equal(kinh.kind, "hung");
+  const tauThu = all.find((s) => s.ten === "Tấu thư");
+  if (tauThu) assert.equal(tauThu.kind, "tot");
+  const html = R.renderBoard(r, "Mệnh");
+  assert.ok(html.includes("col-tot") && html.includes("col-hung"));
+  const strip = R.renderHanStrip(r);
+  assert.ok(strip.includes("ĐV") && strip.includes("LNg") && strip.includes("LT"));
+});

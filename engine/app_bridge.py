@@ -117,11 +117,23 @@ def all_stars(palace: dict[str, Any]) -> list[dict[str, Any]]:
     return unique
 
 
+def star_kind(loai: Any) -> str:
+    """Phân loại theo engine: 1 = chính tinh; < 10 = sao tốt; > 10 = hung tinh (sát/bại/ám/hình…)."""
+    try:
+        n = int(loai)
+    except (TypeError, ValueError):
+        return "tot"
+    if n == 1:
+        return "chinh"
+    return "tot" if n < 10 else "hung"
+
+
 def _star_view(star: Any, group: str) -> dict[str, Any]:
     dac = star.get("dac_tinh") or star.get("saoDacTinh") or ""
     return {
         "ten": star_name(star),
         "nhom": group,
+        "kind": star_kind(star.get("loai") or star.get("saoLoai")),
         "ngu_hanh": element_label(star.get("ngu_hanh") or star.get("saoNguHanh")),
         "dac_tinh": DAC_TINH_LABEL.get(str(dac), ""),
     }

@@ -2,7 +2,7 @@
 import { createEngine } from "./engine.js";
 import {
   CHI, GIO_LABEL, esc, renderBoard, renderCach, renderHanCards, renderPalaceDetail,
-  renderLuuBang, renderProfiles, renderSao, renderSummary, renderVanTable,
+  renderHanStrip, renderLuuBang, renderProfiles, renderSao, renderSummary, renderVanTable,
 } from "./render.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -106,6 +106,7 @@ function renderAll() {
   if (!r) return;
 
   $("#summary").innerHTML = renderSummary(r);
+  $("#han-strip").innerHTML = renderHanStrip(r);
   $("#board").innerHTML = renderBoard(r, state.selected);
   $("#palace-detail").innerHTML = renderPalaceDetail(r, state.selected);
 

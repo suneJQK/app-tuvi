@@ -58,6 +58,36 @@ export function renderSummary(result) {
     .map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v || "—")}</b></div>`).join("")}</div>`;
 }
 
+/** Dải vận hạn đặt ngay trên bàn số: tên cung đang chịu từng lớp hạn. */
+export function renderHanStrip(result) {
+  const v = result.van || {};
+  const h = result.han || {};
+  const year = result.chart.viewing?.year;
+  const row = (v.rows || []).find((r) => r.nam === year) || {};
+  const dv = v.dai_van_hien_tai;
+  const dvName = dv ? (dv.cung || palaceNameBySo(result, dv.cung_so)) : null;
+  const items = [
+    ["ĐV", dvName, dv ? `${dv.tuoi_bat_dau}–${dv.tuoi_ket_thuc}` : ""],
+    ["LNĐV", row.luu_nien_dai_van?.cung],
+    ["TV", row.tieu_van?.cung],
+    ["LN", row.luu_nien_nam?.cung],
+    ["LNg", h.luu_nguyet?.cung_ten, h.luu_nguyet ? `tháng ${h.luu_nguyet.thang_am}` : ""],
+    ["LNh", h.luu_nhat?.cung_ten, h.luu_nhat ? `ngày ${h.luu_nhat.ngay_am}` : ""],
+    ["LT", h.luu_thoi?.cung_ten, h.luu_thoi?.gio ? `giờ ${h.luu_thoi.gio}` : ""],
+  ];
+  const view = result.chart.viewing || {};
+  return `<div class="han-strip">
+      <div class="han-head">Vận hạn năm ${esc(year)} · ${esc(view.day ?? "")}/${esc(view.month ?? "")}</div>
+      <div class="han-chips">${items.map(([k, name, sub]) =>
+        `<span class="han-chip" title="${esc(TAG_TITLE[k] || k)}"><b>${esc(k)}</b> ${esc(name || "—")}${sub ? ` <small>${esc(sub)}</small>` : ""}</span>`).join("")}</div>
+    </div>`;
+}
+
+const TAG_TITLE = {
+  ĐV: "Đại vận", LNĐV: "Lưu niên Đại vận", TV: "Tiểu vận", LN: "Lưu niên năm",
+  LNg: "Lưu nguyệt", LNh: "Lưu nhật", LT: "Lưu thời",
+};
+
 export function renderBoard(result, selected) {
   const tags = hanTags(result);
   const cells = result.palaces.map((p) => {
@@ -73,7 +103,12 @@ export function renderBoard(result, selected) {
       .map(([key]) => `<span class="badge han" title="${esc(TAG[key].title)}">${esc(TAG[key].abbr)}</span>`)
       .join("");
     const main = p.chinh_tinh.map((s) => `<div class="main-stars">${esc(s.ten)} ${dacLabel(s)}</div>`).join("");
-    const minor = p.phu_tinh.map((s) => esc(s.ten)).join(" · ");
+    const tot = p.phu_tinh.filter((s) => s.kind !== "hung");
+    const hung = p.phu_tinh.filter((s) => s.kind === "hung");
+    const starCols = `<div class="star-cols">
+        <div class="col-tot">${tot.map((s) => `<div>${esc(s.ten)}</div>`).join("")}</div>
+        <div class="col-hung">${hung.map((s) => `<div>${esc(s.ten)}</div>`).join("")}</div>
+      </div>`;
     const dvRange = p.dai_van != null ? `${p.dai_van}–${p.dai_van + 9}` : "";
     const elClass = ELEMENT_CLASS[p.ngu_hanh] || "";
     return `
@@ -83,7 +118,7 @@ export function renderBoard(result, selected) {
         <div class="cell-head"><span class="cell-name ${elClass}">${esc(p.cung)}</span><span class="cell-chi">${esc(p.can_chi)}</span></div>
         <div class="badges">${badges}${hanBadges}</div>
         ${main}
-        <div class="minor-stars">${minor}</div>
+        ${starCols}
         <div class="cell-foot"><span>${esc(p.ngu_hanh)} · ${esc(p.trang_sinh || "")}</span><span>${dvRange}</span></div>
       </div>`;
   }).join("");
@@ -122,8 +157,10 @@ export function renderPalaceDetail(result, cungName) {
     </div>
     <h3>Chính tinh</h3>
     ${p.chinh_tinh.length ? p.chinh_tinh.map((s) => `<div class="rel-item"><b>${esc(s.ten)}</b> ${dacLabel(s)} <small>${esc(s.ngu_hanh)}</small></div>`).join("") : "<div class='muted small'>Không có</div>"}
-    <h3>Phụ tinh</h3>
-    <div class="small">${p.phu_tinh.length ? p.phu_tinh.map((s) => `${esc(s.ten)}${s.dac_tinh ? ` (${esc(s.dac_tinh)})` : ""}`).join(" · ") : "Không có"}</div>
+    <h3>Sao tốt</h3>
+    <div class="small">${p.phu_tinh.filter((s) => s.kind !== "hung").map((s) => `${esc(s.ten)}${s.dac_tinh ? ` (${esc(s.dac_tinh)})` : ""}`).join(" · ") || "Không có"}</div>
+    <h3>Hung tinh</h3>
+    <div class="small">${p.phu_tinh.filter((s) => s.kind === "hung").map((s) => esc(s.ten)).join(" · ") || "Không có"}</div>
     <h3>Quan hệ cung (suy từ Địa Chi)</h3>
     ${relGroup("Tam Hợp", rel.tam_hop)}${relGroup("Xung Chiếu", rel.xung_chieu)}${relGroup("Nhị Hợp", rel.nhi_hop)}${relGroup("Giáp Cung", rel.giap_cung)}
   `;
