@@ -88,8 +88,30 @@ const TAG_TITLE = {
   LNg: "Lưu nguyệt", LNh: "Lưu nhật", LT: "Lưu thời",
 };
 
+/** Gom Lưu nguyệt (tháng âm), Lưu nhật (ngày âm), Lưu thời (giờ) theo tên cung để gắn lên từng ô. */
+export function luuMarksByCung(result) {
+  const h = result.han || {};
+  const marks = {};
+  const put = (cung, kind, item) => {
+    if (!cung) return;
+    (marks[cung] ||= { thang: [], ngay: [], gio: [] })[kind].push(item);
+  };
+  (h.luu_nguyet?.bang || []).forEach((r) => put(r.cung_ten, "thang", { n: r.thang_am, cur: r.thang_am === h.luu_nguyet.thang_am }));
+  (h.luu_nhat?.bang || []).forEach((r) => put(r.cung_ten, "ngay", { n: r.ngay_am, cur: r.ngay_am === h.luu_nhat.ngay_am }));
+  (h.luu_thoi?.bang || []).forEach((r) => put(r.cung_ten, "gio", { n: r.gio, cur: r.gio_so === h.luu_thoi.gio_so }));
+  return marks;
+}
+
+function luuLine(m) {
+  if (!m) return "";
+  const part = (label, items, fmt) => items.length
+    ? `<span>${label} ${items.map((i) => `<b class="${i.cur ? "cur" : ""}">${esc(fmt(i))}</b>`).join(" ")}</span>` : "";
+  return `<div class="luu-line">${part("T", m.thang, (i) => i.n)}${part("N", m.ngay, (i) => i.n)}${part("G", m.gio, (i) => i.n)}</div>`;
+}
+
 export function renderBoard(result, selected) {
   const tags = hanTags(result);
+  const marks = luuMarksByCung(result);
   const cells = result.palaces.map((p) => {
     const row = p.vi_tri?.row ?? 1;
     const col = p.vi_tri?.column ?? 1;
@@ -119,6 +141,7 @@ export function renderBoard(result, selected) {
         <div class="badges">${badges}${hanBadges}</div>
         ${main}
         ${starCols}
+        ${luuLine(marks[p.cung])}
         <div class="cell-foot"><span>${esc(p.ngu_hanh)} · ${esc(p.trang_sinh || "")}</span><span>${dvRange}</span></div>
       </div>`;
   }).join("");

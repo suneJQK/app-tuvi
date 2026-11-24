@@ -164,3 +164,18 @@ test("sao trên bàn: chính tinh riêng, sao tốt bên trái, hung tinh bên p
   const strip = R.renderHanStrip(r);
   assert.ok(strip.includes("ĐV") && strip.includes("LNg") && strip.includes("LT"));
 });
+
+test("trên từng cung hiển thị tháng âm (Lưu nguyệt), ngày âm (Lưu nhật) và giờ (Lưu thời)", () => {
+  const r = engine.tinhLaSo({ ...BIRTH_1996, nam_xem: 2026, thang_xem: 2, ngay_xem: 17, gio_xem: 5 });
+  const marks = R.luuMarksByCung(r);
+  const thang = Object.values(marks).flatMap((m) => m.thang.map((x) => x.n));
+  assert.equal(thang.length, 12);
+  assert.equal(marks["Phu thê"].thang[0].n, 1);       // tháng 1 âm ở Phu thê (Dậu)
+  assert.equal(marks["Phu thê"].thang[0].cur, true);
+  const ngay = Object.values(marks).flatMap((m) => m.ngay.map((x) => x.n));
+  assert.ok(ngay.length >= 29);
+  const gio = Object.values(marks).flatMap((m) => m.gio);
+  assert.equal(gio.length, 12);
+  const html = R.renderBoard(r, "Mệnh");
+  assert.equal((html.match(/class="luu-line"/g) || []).length, 12);
+});
