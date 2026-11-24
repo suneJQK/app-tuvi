@@ -16,6 +16,14 @@
     <span id="build-tag" class="status build-tag">build __BUILD__</span>
   </header>
 
+  <nav class="fn-bar" aria-label="Chức năng">
+    <button class="fn active" data-view="view-la-so"><i>🏠</i>Lá số</button>
+    <button class="fn" data-view="view-van"><i>⏳</i>Vận hạn</button>
+    <button class="fn" data-view="view-cach"><i>✦</i>Cách cục</button>
+    <button class="fn" data-view="view-sao"><i>★</i>Danh bạ sao</button>
+    <button class="fn" data-view="view-ho-so"><i>💾</i>Hồ sơ</button>
+  </nav>
+
   <main>
     <!-- 1. Lập lá số -->
     <section id="view-la-so" class="view active">
@@ -108,14 +116,6 @@
       <div id="ho-so-list"></div>
     </section>
   </main>
-
-  <nav class="tabbar" aria-label="Chức năng">
-    <button class="tab active" data-view="view-la-so">Lá số</button>
-    <button class="tab" data-view="view-van">Vận hạn</button>
-    <button class="tab" data-view="view-cach">Cách cục</button>
-    <button class="tab" data-view="view-sao">Danh bạ sao</button>
-    <button class="tab" data-view="view-ho-so">Hồ sơ</button>
-  </nav>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script type="module" src="js/app.js"></script>

@@ -1,4 +1,4 @@
-// Điều khiển ứng dụng: form, chuyển tab, lưu hồ sơ, gọi engine Python (Pyodide).
+// Điều khiển ứng dụng: form, nút chức năng, lưu hồ sơ, gọi engine Python (Pyodide).
 import { createEngine } from "./engine.js";
 import {
   CHI, GIO_LABEL, esc, renderBoard, renderCach, renderHanCards, renderPalaceDetail,
@@ -148,8 +148,8 @@ function renderProfilesView() {
 // ------------------------------------------------------------ sự kiện
 
 function bindEvents() {
-  document.querySelectorAll(".tab").forEach((btn) => btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b === btn));
+  document.querySelectorAll(".fn").forEach((btn) => btn.addEventListener("click", () => {
+    document.querySelectorAll(".fn").forEach((b) => b.classList.toggle("active", b === btn));
     document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.id === btn.dataset.view));
     window.scrollTo({ top: 0 });
     if (btn.dataset.view === "view-ho-so") renderProfilesView();
@@ -222,7 +222,7 @@ function bindEvents() {
     if (openBtn) {
       const p = list[Number(openBtn.dataset.open)];
       fillBirthForm(p.birth);
-      document.querySelector('.tab[data-view="view-la-so"]').click();
+      document.querySelector('.fn[data-view="view-la-so"]').click();
       try {
         const t = todayParts();
         state.selected = "Mệnh";
