@@ -152,9 +152,10 @@ export function renderBoard(result, selected) {
       </div>`;
     const dvRange = p.dai_van != null ? `${p.dai_van}–${p.dai_van + 9}` : "";
     const elClass = ELEMENT_CLASS[p.ngu_hanh] || "";
+    const order = ((Number(p.cung_so) - 2 + 12) % 12) + 1; // Mệnh (cung 2) đứng đầu trên điện thoại
     return `
       <div class="cell ${p.cung === selected ? "selected" : ""} ${p.cung === "Mệnh" ? "menh" : ""}"
-           style="grid-row:${row};grid-column:${col}" role="button" tabindex="0" data-cung="${esc(p.cung)}"
+           style="grid-row:${row};grid-column:${col};order:${order}" role="button" tabindex="0" data-cung="${esc(p.cung)}"
            aria-label="Cung ${esc(p.cung)}">
         <div class="cell-head"><span class="cell-name ${elClass}">${esc(p.cung)}</span><span class="cell-chi">${esc(p.can_chi)}</span></div>
         <div class="badges">${badges}${hanBadges}</div>
@@ -169,7 +170,7 @@ export function renderBoard(result, selected) {
   const ln = h.luu_nguyet, lnh = h.luu_nhat, lt = h.luu_thoi;
   const at = (x) => (x ? esc(x) : "—");
   const center = `<div class="center">
-      <div class="big">${esc(t.ten || "Lá số")}</div>
+      <div class="big">${esc(t.ten && t.ten !== "—" ? t.ten : "Lá số")}</div>
       <div class="sub">${esc(t.can_chi_nam)} · ${esc(t.ten_cuc)}</div>
       <div class="sub">${esc(result.chart.input?.lich || "")} · ${esc(result.chart.input?.gioi_tinh || "")}</div>
       <div class="center-luu">
