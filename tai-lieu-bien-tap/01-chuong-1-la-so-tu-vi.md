@@ -590,59 +590,13 @@ năm Tỵ Dậu Sửu là thường gặp nhất, ví dụ: trong Tử vi Đẩu
 an chiếu bảng sắp xếp nêu trên. Nhưng có ý kiến cho rằng cách sắp xếp này 
 chưa đúng, dựa vào bản thời nhà Tống, nên sửa như sau:
 
-Bảng sắp xếp vị trí của Hỏa Tinh và Linh Tinh trong niên can của năm 
-Tỵ Dậu Sửu
+**Bảng sắp xếp vị trí của Hỏa Tinh và Linh Tinh trong năm Tỵ Dậu Sửu (theo bản thời nhà Tống):**
 
-Giờ 
-sinh
+| Giờ sinh | Tý | Sửu | Dần | Mão | Thìn | Tỵ | Ngọ | Mùi | Thân | Dậu | Tuất | Hợi |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hỏa Tinh | Mão | Thìn | Tỵ | Ngọ | Mùi | Thân | Dậu | Tuất | Hợi | Tý | Sửu | Dần |
+| Linh Tinh | Tuất | Hợi | Tý | Sửu | Dần | Mão | Thìn | Tỵ | Ngọ | Mùi | Thân | Dậu |
 
-Tý 
-Sửu 
-Dần 
-Mão 
-Thìn 
-Tỵ 
-Ngọ 
-Mùi Thân 
-Dậu 
-Tuất 
-Hợi
-
-Hỏa
-
-Tuất 
-Hợi 
-Tý 
-Sửu 
-Dần 
-Mão 
-Thìn 
-Tỵ 
-Ngọ 
-Mùi 
-Thân 
-Dậu
-
-Tinh
-
-Mão 
-Thìn 
-Tỵ 
-Ngọ 
-Mùi 
-Thân 
-Dậu 
-Tuất 
-Hợi 
-Tý 
-Sửu 
-Dần
-
-Linh
-
-Tinh
-
-<!-- Trang 18 *(PDF tr. 28)* -->
 **(13) Bảng sắp xếp các sao trong tháng:**
 
 | Tháng sinh | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
@@ -659,17 +613,14 @@ Tinh
 
 **(14) Phương pháp sắp xếp các sao trong ngày:**
 
-| Các sao | Phương pháp an sao | Phương pháp an sao |
-| --- | --- | --- |
-| Tam Đài | Lấy sao Tả Phù là điểm bắt đầu, đếm xuôi lần lượt cho tới ngày sinh nhật. | Lấy sao Tả Phù là điểm bắt đầu, đếm xuôi lần lượt cho tới ngày sinh nhật. |
-| Bát Tọa | Lấy sao Hữu Bật là điểm bắt đầu, đếm ngược lần lượt cho tới ngày sinh nhật. | Lấy sao Hữu Bật là điểm bắt đầu, đếm ngược lần lượt cho tới ngày sinh nhật. |
-| Ân Quang |  | Lấy sao Văn Xương là điểm bắt đầu, đếm xuôi lần lượt cho tới ngày sinh |
-|  |  | nhật, rồi sau lùi lại 1 cung |
-| Thiên Quý |  | Lấy sao Văn Khúc là điểm bắt đầu, đếm xuôi lần lượt cho tới ngày sinh nhật, |
-|  |  | rồi sau lùi lại 1 cung |
+| Các sao | Phương pháp an sao |
+| --- | --- |
+| Tam Đài | Lấy sao Tả Phù là điểm bắt đầu, đếm xuôi lần lượt cho tới ngày sinh âm lịch. |
+| Bát Tọa | Lấy sao Hữu Bật là điểm bắt đầu, đếm ngược lần lượt cho tới ngày sinh âm lịch. |
+| Ân Quang | Lấy sao Văn Xương là điểm bắt đầu, đếm xuôi lần lượt cho tới ngày sinh âm lịch, rồi lùi lại 1 cung. |
+| Thiên Quý | Lấy sao Văn Khúc là điểm bắt đầu, đếm ngược lần lượt cho tới ngày sinh âm lịch, rồi lùi lại 1 cung. |
 
-<!-- Trang 19 *(PDF tr. 29)* -->
-**(15) Bảng sắp xếp các sao trong hệ can:**
+(15) Bảng sắp xếp các sao trong hệ can:**
 
 | Can năm sinh | Giáp | Ất | Bính | Đinh | Mậu | Kỷ | Canh | Tân | Nhâm | Quý |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -708,94 +659,6 @@ Hao, Phục Binh, Quan Phủ.
 | Phá Toái | Tỵ | Sửu | Dậu | Tỵ | Sửu | Dậu | Tỵ | Sửu | Dậu | Tỵ | Sửu | Dậu |
 | Cô Thần | Dần | Dần | Tỵ | Tỵ | Tỵ | Thân | Thân | Thân | Hợi | Hợi | Hợi | Dần |
 | Quả Tú | Tuất | Tuất | Sửu | Sửu | Sửu | Thìn | Thìn | Thìn | Mùi | Mùi | Mùi | Tuất |
-
-<!-- Trang 20 *(PDF tr. 30)* -->
-Loan
-
-Thiên Hỉ 
-Dậu 
-Thân 
-Mùi 
-Ngọ 
-Tỵ 
-Thìn 
-Mão 
-Dần 
-Sửu 
-Tý 
-Hợi 
-Tuất
-
-Phi Liêm 
-Thân 
-Dậu 
-Tuất 
-Tỵ 
-Ngọ 
-Mùi 
-Dần 
-Mão 
-Thìn 
-Hợi 
-Tý 
-Sửu
-
-Phá Toái 
-Tỵ 
-Sửu 
-Dậu 
-Tỵ 
-Sửu 
-Dậu 
-Tỵ 
-Sửu 
-Dậu 
-Tỵ 
-Sửu 
-Dậu
-
-Cô Thần 
-Dần 
-Dần 
-Tỵ 
-Tỵ 
-Tỵ 
-Thân 
-Thân 
-Thân 
-Hợi 
-Hợi 
-Hợi 
-Dần
-
-Quả Tú 
-Tuất 
-Tuất 
-Sửu 
-Sửu 
-Sửu 
-Thìn 
-Thìn 
-Thìn 
-Mùi 
-Mùi 
-Mùi 
-Tuất
-
-Phụ 
-Mẫu
-
-Điền 
-Trạch
-
-Bộc 
-Dịch
-
-Tật 
-Ách
-
-Tử 
-Nữ
 
 Thiên Tài 
 Cung 
